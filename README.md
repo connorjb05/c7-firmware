@@ -104,42 +104,6 @@ On timeout, the firmware calls `stop()` on the drivetrain, steering, Bluetooth, 
 | Critical error | Fast red blink |
 | Safe mode | Purple |
 
-## Build and Upload
-
-Install PlatformIO first. The easiest path is usually the PlatformIO extension for Visual Studio Code.
-
-From the project folder:
-
-```powershell
-cd "C:\Users\mccon\Desktop\c7 build 2\C7 Firmware"
-```
-
-Build the firmware:
-
-```powershell
-pio run
-```
-
-Upload to the ESP32-S3:
-
-```powershell
-pio run -t upload
-```
-
-Open the serial monitor:
-
-```powershell
-pio device monitor
-```
-
-If PlatformIO does not auto-detect the board port, pass the upload port manually:
-
-```powershell
-pio run -t upload --upload-port COM3
-```
-
-Replace `COM3` with the actual port for your ESP32-S3.
-
 ## Dependencies
 
 PlatformIO installs these libraries from `platformio.ini`:
@@ -175,13 +139,6 @@ After making changes:
 ```powershell
 git status
 git add .
-git commit -m "Describe your change"
+git commit -m "changes"
 git push
-```
-
-For the first push to a new GitHub repository, add the remote first:
-
-```powershell
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
-git push -u origin main
 ```
