@@ -9,6 +9,7 @@
 #include "Gear.h"
 #include "ControlModule.h"
 #include "TCM.h"
+#include "VehicleConfig.h"
 
 class ECU : public ControlModule
 {
@@ -44,9 +45,9 @@ private:
     DriveMode driveMode = static_cast<DriveMode>(0);
     Gear gear = static_cast<Gear>(0);
 
-    float currentUs = NEUTRAL_US;
-    float targetUs = NEUTRAL_US;
-    float preShiftUs = NEUTRAL_US;
+    float currentUs = VehicleConfig::ESC::NEUTRAL_US;
+    float targetUs = VehicleConfig::ESC::NEUTRAL_US;
+    float preShiftUs = VehicleConfig::ESC::NEUTRAL_US;
 
     float throttle = 0.0f;
 
