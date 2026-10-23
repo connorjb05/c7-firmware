@@ -29,80 +29,54 @@ void ECU::loop()
 
     uint32_t timestamp = millis();
 
+    // Tracks the start of each shift so preShiftUs is saved only once.
+    static bool wasShifting = false;
+
     // If the TCM is shifting
     // then ECU must free spin/coast
     if (tcm.isShifting() &&
         timestamp > 0
     ) 
     {
-        // Keep track of currentUs before shifting
-        // for mathematical estimation for after the shift
-        preShiftUs = currentUs;
+
+        if (!wasShifting) 
+        {
+            preShiftUs = currentUs;
+            wasShifting = true;
+        }
 
         targetUs = NEUTRAL_US;
-        currentUs = targetUs;
-        ECU::writeToESC(currentUs);
+        currentUs = NEUTRAL_US;
+
+        writeToESC(currentUs);
         return;
     }
+
+    wasShifting = false;
 
     /*
     TCM considers the shift as 'complete'.
     ECU will now provide power to the drive train
     */
-    if (!tcm.isShifting() &&
-        tcm.isShiftingCompleted() &&
-        ECU::isNeutral() &&
+    if (tcm.isShiftingCompleted() &&
         timestamp > 0
     ) 
     {
-        /*
-        apply power to the drive train
         
-        There's two ways to do this:
-        
-        First: Using sensors to match the input rpm 
-        to the output rpm, then depending on throttle
-        apply acceleration. 
-        
-        Second: Using an mathematics to estimate
-        what the input rpm should be based on the what the
-        rpm was when starting the shift.
-        */
-
         VehicleSensors& sensors = Modules::getSensors();
 
-        if (sensors.getOutputRPM() > 0) // RPM matching
-        {
+        const float inputRPM = fabsf(sensors.getMotorRPM());
+        const float outputRPM = fabsf(sensors.getOutputRPM());
 
-            float maxRPM = 11.1f * 4000.0f * 0.97f;
-            float targetRPM = sensors.getOutputRPM();
+        const uint8_t targetGearNum = static_cast<uint8_t>(
+            tcm.getTargetGear()
+        );
 
-            float targetUs = NEUTRAL_US + 
-                (targetRPM / maxRPM) * 
-                (MAX_US - NEUTRAL_US);
-
-            ECU::currentUs = min(
-                currentUs + getAcceleration(),
-                targetUs
-            );
-
-        }
-        else // Mathematical estimation
-        {
-            float acceleration = getAcceleration();
-            
-            ECU::targetUs = preShiftUs;
-            ECU::currentUs = min(
-                currentUs + acceleration,
-                targetUs
-            );
-        }
-
-        ECU::writeToESC(currentUs);
+        const float targetGearRatio = VehicleConfig::Transmission
 
         tcm.setShiftingCompleted(false); // UPDATE THE TCM
         
-        return; // Start acceleration based on throttle AFTER the shift RPM sync
+        return; // Start throttle's acceleration AFTER the shift RPM sync
     }
     
     if (brake) 

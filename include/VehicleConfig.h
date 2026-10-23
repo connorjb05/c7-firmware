@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include "Gear.h"
 
 namespace VehicleConfig 
 {
-
 
     namespace Vehicle
     {
@@ -15,7 +15,6 @@ namespace VehicleConfig
     namespace Tires
     {
         inline constexpr float DIAMETER_MM = 65.0f;
-
         inline constexpr float CIRCUMFERENCE_MM = DIAMETER_MM * PI;
     }
 
@@ -24,46 +23,67 @@ namespace VehicleConfig
         inline constexpr float GEAR_RATIO = 2.6f;
     }
 
+    namespace Battery 
+    {
+        inline constexpr uint8_t CELL_COUNT = 3;
+        
+        inline constexpr float NOMINAL_CELL_VOLTAGE = 3.7f;
+        inline constexpr float MAX_CELL_VOLTAGE = 4.2f;
+
+        inline constexpr uint16_t CAPACITY_MAH = 5200;
+
+        inline constexpr float NOMINAL_VOLTAGE = CELL_COUNT * NOMINAL_CELL_VOLTAGE;
+
+        inline constexpr float MAX_VOLTAGE = CELL_COUNT * MAX_CELL_VOLTAGE;
+    }
+
     namespace Motor
     {
         inline constexpr uint16_t KV = 4000;
         inline constexpr float EFFICIENCY_MOTOR = 0.90f;
+    
+        inline constexpr float MAX_NO_LOAD_RPM = 
+            static_cast<float>(KV) * Battery::MAX_VOLTAGE;
+
+        inline constexpr float NOMINAL_NO_LOAD_RPM =
+            static_cast<float>(KV) * Battery::NOMINAL_VOLTAGE;
     }
 
-    namespace Battery 
+    namespace Transmission 
     {
-        inline constexpr uint8_t CELL_COUNT = 3;
-        inline constexpr float NOMINAL_CELL_VOLTAGE = 3.7f;
-        inline constexpr uint16_t CAPACITY_MAH = 5200;
+        constexpr uint8_t GEAR_COUNT = 2;
 
-        inline constexpr float NOMINAL_VOLTAGE = CELL_COUNT * NOMINAL_CELL_VOLTAGE;
-    }
-
-    namespace Transmission
-    {
-        inline constexpr uint8_t GEAR_COUNT = 2;
-
-        // placeholder ratios
-        inline constexpr float GEAR_RATIOS[GEAR_COUNT] = {
-            2.0f, // First
-            0.8f, // Second
-        };
-
-        inline constexpr float getRatio(uint8_t gear) 
+        inline float getRatio(Gear gear) 
         {
-            return (gear >= 1 && gear <= GEAR_COUNT) 
-            ? GEAR_RATIOS[gear - 1]
-            : 0.0f;
+            switch (gear) 
+            {
+                case Gear::First:
+                    return 2.0f;
+                    
+                case Gear::Second:
+                    return 0.8f;
+
+                case Gear::Neutral:
+                default:
+                    return 0.0f;
+            }
         }
-    }
 
-    namespace ESC
-    {
-        inline constexpr uint16_t MIN_US = 1000;
-        inline constexpr uint16_t NEUTRAL_US = 1500;
-        inline constexpr uint16_t MAX_US = 2000;
+        inline std::uint8_t getServoAngle(Gear gear) 
+        {
+            switch (gear) 
+            {
+                case Gear::First:
+                    return 90;
 
-        inline constexpr uint16_t PWM_FREQUENCY_HZ = 50;
+                case Gear::Second:
+                    return 90;
+
+                case Gear::Neutral:
+                default:
+                    return 90;
+            }
+        }
     }
 
 }
